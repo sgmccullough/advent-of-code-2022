@@ -12,7 +12,7 @@ import (
 func main() {
 	part1()
 
-	// part2()
+	part2()
 }
 
 func part1() {
@@ -51,8 +51,26 @@ func part1() {
 			}
 		}
 	}
-	fmt.Println(cargo)
-	// fmt.Printf("Part 1: %v\n", sum)
+
+	for _, s := range vals[1] {
+		curr := strings.Fields(s)
+		toMove, _ := strconv.Atoi(curr[1])
+		from, _ := strconv.Atoi(curr[3])
+		to, _ := strconv.Atoi(curr[5])
+		for i := 1; i <= toMove; i++ {
+			temp := cargo[from-1][len(cargo[from-1])-1]
+			cargo[from-1] = cargo[from-1][:len(cargo[from-1])-1]
+			cargo[to-1] = append(cargo[to-1], string(temp))
+		}
+	}
+
+	output := ""
+
+	for i := 0; i < len(cargo); i++ {
+		output = output + cargo[i][len(cargo[i])-1]
+	}
+
+	fmt.Printf("Part 1: %s\n", output)
 }
 
 func part2() {
@@ -67,29 +85,46 @@ func part2() {
 
 	scanner.Split(bufio.ScanLines)
 
-	sum := 0
+	pos := 0
+	stackNumber := 0
+	var vals [2][]string
 
 	for scanner.Scan() {
 		curr := scanner.Text()
-		removeComma := strings.Split(curr, ",")
-		first := strings.Split(removeComma[0], "-")
-		second := strings.Split(removeComma[1], "-")
-		one_one, _ := strconv.Atoi(first[0])
-		one_two, _ := strconv.Atoi(first[1])
-		two_one, _ := strconv.Atoi(second[0])
-		two_two, _ := strconv.Atoi(second[1])
-
-		// a-b, c-d
-		// a <= c && b >= c
-		// c <= a && c >= b
-		if (one_one <= two_one && one_two >= two_one) || (two_one <= one_one && two_one >= one_two) {
-			sum += 1
-		} else if one_one <= two_two && one_two >= two_two {
-			sum += 1
-		} else if two_one <= one_one && two_two >= one_one {
-			sum += 1
+		if curr == "" {
+			pos = 1
+		} else if curr[1] == '1' {
+			stackNumber = (len(curr) + 1) / 4
+		} else {
+			vals[pos] = append(vals[pos], curr)
 		}
 	}
 
-	fmt.Printf("Part 2: %v\n", sum)
+	cargo := make([][]string, stackNumber)
+
+	for _, s := range vals[0] {
+		for j := 1; j < len(s); j += 4 {
+			if s[j] != ' ' {
+				cargo[(j-1)/4] = append([]string{string(s[j])}, cargo[(j-1)/4]...)
+			}
+		}
+	}
+
+	for _, s := range vals[1] {
+		curr := strings.Fields(s)
+		toMove, _ := strconv.Atoi(curr[1])
+		from, _ := strconv.Atoi(curr[3])
+		to, _ := strconv.Atoi(curr[5])
+		temp := cargo[from-1][len(cargo[from-1])-(toMove) : len(cargo[from-1])]
+		cargo[from-1] = cargo[from-1][:len(cargo[from-1])-toMove]
+		cargo[to-1] = append(cargo[to-1], temp...)
+	}
+
+	output := ""
+
+	for i := 0; i < len(cargo); i++ {
+		output = output + cargo[i][len(cargo[i])-1]
+	}
+
+	fmt.Printf("Part 2: %s\n", output)
 }
